@@ -66,6 +66,15 @@ define Device/openmesh_om5p-ac-v2
 endef
 TARGET_DEVICES += openmesh_om5p-ac-v2
 
+define Device/pcs_cr3000
+  ATH_SOC := ar9341
+  DEVICE_TITLE := PowerCloud Systems CR3000
+  IMAGE_SIZE := 7808k
+  IMAGES := sysupgrade.bin
+  SUPPORTED_DEVICES += cr3000
+endef
+TARGET_DEVICES += pcs_cr3000
+
 define Device/netgear_wndr3800
   ATH_SOC := ar7161
   DEVICE_TITLE := NETGEAR WNDR3800
