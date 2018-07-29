@@ -1,0 +1,14 @@
+
+preinit_swap_ethernet_names() {
+	. /lib/functions.sh
+
+	case $(board_name) in
+	pcs,cr3000)
+		ip link set eth0 name eth999
+		ip link set eth1 name eth0
+		ip link set eth999 name eth1
+		;;
+	esac
+}
+
+boot_hook_add preinit_main preinit_swap_ethernet_names
