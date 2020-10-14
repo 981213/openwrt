@@ -117,6 +117,11 @@ define Build/netis-tail
 		sed 's/../\\\\x&/g' | xargs echo -ne >> $@
 endef
 
+define Build/patch-dtb-elf
+	$(TARGET_CROSS)objcopy --update-section \
+		.appended_dtb=$(KDIR)/image-$(firstword $(DEVICE_DTS)).dtb $@
+endef
+
 define Build/poray-header
 	$(STAGING_DIR_HOST)/bin/mkporayfw $(1) -f $@ -o $@.new
 	mv $@.new $@
