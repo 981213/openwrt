@@ -1,0 +1,211 @@
+From 72297ab9e608726451dc367755fbdf07b949c329 Mon Sep 17 00:00:00 2001
+From: Chuanhong Guo <gch981213@gmail.com>
+Date: Wed, 14 Oct 2020 22:31:18 +0800
+Subject: [PATCH] MIPS: add elf appended dtb support for zboot
+
+This adds a appended_dtb section to vmlinuz, and dtb can be added using
+objcopy like what's currently supported in vmlinux.
+
+Signed-off-by: Chuanhong Guo <gch981213@gmail.com>
+---
+ arch/mips/Kconfig                             | 21 +++++++++++++++++++
+ arch/mips/boot/compressed/.gitignore          |  1 +
+ arch/mips/boot/compressed/Makefile            |  5 ++++-
+ arch/mips/boot/compressed/decompress.c        |  4 ++++
+ .../compressed/{ld.script => vmlinuz.lds.S}   |  8 +++++++
+ 5 files changed, 38 insertions(+), 1 deletion(-)
+ rename arch/mips/boot/compressed/{ld.script => vmlinuz.lds.S} (88%)
+
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -3021,6 +3021,27 @@ choice
+ 		  if you don't intend to always append a DTB.
+ endchoice
+ 
++config MIPS_ELF_APPENDED_DTB_VMLINUZ
++	bool "vmlinuz (ELF self-decompressing kernel) appended DTB support"
++	depends on MIPS_RAW_APPENDED_DTB && SYS_SUPPORTS_ZBOOT
++	help
++	  With this option, the vmlinuz (self-decompressing kernel ELF binary)
++	  boot code will look for a device tree binary (DTB|FDT) included in
++	  the vmlinux ELF section .appended_dtb. By default it is empty and
++	  the DTB can be appended using binutils command
++	  objcopy:
++
++	    objcopy --update-section .appended_dtb=<filename>.dtb vmlinuz
++
++	  This is meant as a backward compatibility convenience for those
++	  systems with a bootloader that can't be upgraded to accommodate
++	  the documented boot protocol using a device tree.
++
++	  vmlinuz uses the compressed vmlinux.bin, thus vmlinux must use
++	  MIPS_RAW_APPENDED_DTB to expect a DTB at the end of uncompressed
++	  kernel location. vmlinuz copies the DTB to this location after kernel
++	  decompression.
++
+ choice
+ 	prompt "Kernel command line type" if !CMDLINE_OVERRIDE
+ 	default MIPS_CMDLINE_FROM_DTB if USE_OF && !ATH79 && !MACH_INGENIC && \
+--- a/arch/mips/boot/compressed/Makefile
++++ b/arch/mips/boot/compressed/Makefile
+@@ -58,6 +58,9 @@ extra-y += bswapsi.c
+ $(obj)/bswapsi.c: $(obj)/%.c: $(srctree)/arch/mips/lib/%.c FORCE
+ 	$(call if_changed,shipped)
+ 
++extra-y += vmlinuz.lds
++CPPFLAGS_vmlinuz.lds := $(KBUILD_CFLAGS)
++
+ targets := $(notdir $(vmlinuzobjs-y))
+ 
+ targets += vmlinux.bin
+@@ -101,7 +104,7 @@ quiet_cmd_zld = LD      $@
+       cmd_zld = $(LD) $(KBUILD_LDFLAGS) -Ttext $(VMLINUZ_LOAD_ADDRESS) -T $< $(vmlinuzobjs-y) -o $@
+ quiet_cmd_strip = STRIP	  $@
+       cmd_strip = $(STRIP) -s $@
+-vmlinuz: $(src)/ld.script $(vmlinuzobjs-y) $(obj)/calc_vmlinuz_load_addr
++vmlinuz: $(src)/vmlinuz.lds $(vmlinuzobjs-y) $(obj)/calc_vmlinuz_load_addr
+ 	$(call cmd,zld)
+ 	$(call cmd,strip)
+ 
+--- a/arch/mips/boot/compressed/decompress.c
++++ b/arch/mips/boot/compressed/decompress.c
+@@ -33,7 +33,11 @@ extern void puthex(unsigned long long va
+ #define puthex(val) do {} while (0)
+ #endif
+ 
++#ifdef CONFIG_MIPS_ELF_APPENDED_DTB_VMLINUZ
++unsigned char __section(.appended_dtb) __appended_dtb[0x100000];
++#else
+ extern char __appended_dtb[];
++#endif
+ 
+ void error(char *x)
+ {
+--- a/arch/mips/boot/compressed/ld.script
++++ /dev/null
+@@ -1,57 +0,0 @@
+-/*
+- * ld.script for compressed kernel support of MIPS
+- *
+- * Copyright (C) 2009 Lemote Inc.
+- * Author: Wu Zhangjin <wuzhanjing@gmail.com>
+- * Copyright (C) 2010 "Wu Zhangjin" <wuzhanjing@gmail.com>
+- */
+-
+-OUTPUT_ARCH(mips)
+-ENTRY(start)
+-PHDRS {
+-	text PT_LOAD FLAGS(7); /* RWX */
+-}
+-SECTIONS
+-{
+-	/* Text and read-only data */
+-	/* . = VMLINUZ_LOAD_ADDRESS; */
+-	.text : {
+-		*(.text)
+-		*(.rodata)
+-	}: text
+-	/* End of text section */
+-
+-	/* Writable data */
+-	.data : {
+-		*(.data)
+-		/* Put the compressed image here */
+-		__image_begin = .;
+-		*(.image)
+-		__image_end = .;
+-		CONSTRUCTORS
+-		. = ALIGN(16);
+-	}
+-	__appended_dtb = .;
+-	/* leave space for appended DTB */
+-	. += 0x100000;
+-
+-	_edata = .;
+-	/* End of data section */
+-
+-	/* BSS */
+-	.bss : {
+-		*(.bss)
+-	}
+-	. = ALIGN(16);
+-	_end = .;
+-
+-	/* Sections to be discarded */
+-	/DISCARD/ : {
+-		*(.MIPS.options)
+-		*(.options)
+-		*(.pdr)
+-		*(.reginfo)
+-		*(.comment)
+-		*(.note)
+-	}
+-}
+--- /dev/null
++++ b/arch/mips/boot/compressed/vmlinuz.lds.S
+@@ -0,0 +1,65 @@
++/*
++ * ld.script for compressed kernel support of MIPS
++ *
++ * Copyright (C) 2009 Lemote Inc.
++ * Author: Wu Zhangjin <wuzhanjing@gmail.com>
++ * Copyright (C) 2010 "Wu Zhangjin" <wuzhanjing@gmail.com>
++ */
++
++OUTPUT_ARCH(mips)
++ENTRY(start)
++PHDRS {
++	text PT_LOAD FLAGS(7); /* RWX */
++}
++SECTIONS
++{
++	/* Text and read-only data */
++	/* . = VMLINUZ_LOAD_ADDRESS; */
++	.text : {
++		*(.text)
++		*(.rodata)
++	}: text
++	/* End of text section */
++
++	/* Writable data */
++	.data : {
++		*(.data)
++		/* Put the compressed image here */
++		__image_begin = .;
++		*(.image)
++		__image_end = .;
++		CONSTRUCTORS
++		. = ALIGN(16);
++	}
++
++#ifdef MIPS_ELF_APPENDED_DTB_VMLINUZ
++	.appended_dtb : {
++		*(.appended_dtb)
++		KEEP(*(.appended_dtb))
++	}
++#else
++	__appended_dtb = .;
++	/* leave space for appended DTB */
++	. += 0x100000;
++#endif
++
++	_edata = .;
++	/* End of data section */
++
++	/* BSS */
++	.bss : {
++		*(.bss)
++	}
++	. = ALIGN(16);
++	_end = .;
++
++	/* Sections to be discarded */
++	/DISCARD/ : {
++		*(.MIPS.options)
++		*(.options)
++		*(.pdr)
++		*(.reginfo)
++		*(.comment)
++		*(.note)
++	}
++}
