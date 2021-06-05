@@ -96,6 +96,17 @@ platform_do_upgrade() {
 		CI_KERNPART="linux"
 		nand_do_upgrade "$1"
 		;;
+	asus,rt-acrh17)
+		local magic=$(get_magic_long "$1")
+		CI_UBIPART="UBI_DEV"
+		CI_KERNPART="linux"
+		if [ "$magic" == "27051956" ]; then
+			echo "Got Asus factory image."
+			asus_nand_upgrade_factory 50409472 "$1"
+		else
+			asus_nand_upgrade_tar 20951040 "$1"
+		fi
+		;;
 	cellc,rtl30vw)
 		CI_UBIPART="ubifs"
 		askey_do_upgrade "$1"

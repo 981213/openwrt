@@ -1,4 +1,5 @@
 . /lib/functions.sh
+. /lib/functions/system.sh
 
 preinit_set_mac_address() {
 	case $(board_name) in
@@ -6,6 +7,12 @@ preinit_set_mac_address() {
 		base_mac=$(mtd_get_mac_binary_ubi Factory 0x1006)
 		ip link set dev eth0 address $(macaddr_add "$base_mac" 1)
 		ip link set dev eth1 address $(macaddr_add "$base_mac" 3)
+		;;
+	asus,rt-acrh17)
+		CI_UBIPART=UBI_DEV
+		base_mac=$(mtd_get_mac_binary_ubi Factory 0x1006)
+		ip link set dev eth0 address $(macaddr_add "$base_mac" 4)
+		ip link set dev eth1 address $base_mac
 		;;
 	ezviz,cs-w3-wd1200g-eup)
 		ip link set dev eth0 address $(mtd_get_mac_binary "ART" 0x6)
