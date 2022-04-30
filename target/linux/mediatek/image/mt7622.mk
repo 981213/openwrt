@@ -222,6 +222,16 @@ define Device/totolink_a8000ru
 endef
 TARGET_DEVICES += totolink_a8000ru
 
+define Device/tplink_tl-xdr3230-v1
+  DEVICE_VENDOR := TP-Link
+  DEVICE_MODEL := TL-XDR3230
+  DEVICE_VARIANT := v1
+  DEVICE_DTS := mt7622-tplink_tl-xdr3230-v1
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_PACKAGES := kmod-mt7915e swconfig
+endef
+TARGET_DEVICES += tplink_tl-xdr3230-v1
+
 define Device/ubnt_unifi-6-lr
   DEVICE_VENDOR := Ubiquiti
   DEVICE_MODEL := UniFi 6 LR
