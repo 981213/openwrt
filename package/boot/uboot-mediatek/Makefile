@@ -65,6 +65,17 @@ define U-Boot/mt7622_bananapi_bpi-r64-snand
   DEPENDS:=+trusted-firmware-a-mt7622-snand-2ddr
 endef
 
+define U-Boot/mt7622_tplink_tl-xdr3230-v1
+  NAME:=TP-Link TL-XDR3230 v1
+  UBOOT_CONFIG:=mt7622_tplink_tl-xdr3230-v1
+  BUILD_DEVICES:=tplink_tl-xdr3230-v1
+  BUILD_SUBTARGET:=mt7622
+  UBOOT_IMAGE:=u-boot.fip
+  BL2_BOOTDEV:=nor
+  BL2_DDRBLOB:=1
+  DEPENDS:=+trusted-firmware-a-mt7622-nor-1ddr
+endef
+
 define U-Boot/mt7622_ubnt_unifi-6-lr
   NAME:=Ubiquiti UniFi 6 LR
   UBOOT_CONFIG:=mt7622_ubnt_unifi-6-lr
