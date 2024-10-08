@@ -1,7 +1,7 @@
-From 819d2a48d45f3734c876186e651917bae69be9ba Mon Sep 17 00:00:00 2001
+From e6c4148b6bbbc94a08b86883e8ac86a861bb9def Mon Sep 17 00:00:00 2001
 From: Chuanhong Guo <gch981213@gmail.com>
 Date: Tue, 20 Aug 2024 08:33:43 +0800
-Subject: [PATCH 3/9] reset: add support for sf19a2890
+Subject: [PATCH 03/15] reset: add support for sf19a2890
 
 Signed-off-by: Chuanhong Guo <gch981213@gmail.com>
 ---

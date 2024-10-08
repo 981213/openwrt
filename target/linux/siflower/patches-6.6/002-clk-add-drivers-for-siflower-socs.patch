@@ -1,7 +1,7 @@
-From fcb96cb774abf14375326c41cedd237d6c8f6e94 Mon Sep 17 00:00:00 2001
+From dc2960d65c80abb9002dc99e65c74938c1f78c22 Mon Sep 17 00:00:00 2001
 From: Chuanhong Guo <gch981213@gmail.com>
 Date: Tue, 20 Aug 2024 08:33:01 +0800
-Subject: [PATCH 2/9] clk: add drivers for sf19a2890
+Subject: [PATCH 02/15] clk: add drivers for siflower socs
 
 Signed-off-by: Chuanhong Guo <gch981213@gmail.com>
 ---
