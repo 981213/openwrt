@@ -68,6 +68,26 @@
 	status = "okay";
 };
 
+&wlan_lb {
+	status = "okay";
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+	gpio-leds = <&gpio 12 0>;
+	smp-affinity = <2>;
+	memory-region = <&wlan24_dsp>;
+};
+
+&wlan_hb {
+	status = "okay";
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+	gpio-leds = <&gpio 12 0>;
+	smp-affinity = <3>;
+	memory-region = <&wlan5_dsp>;
+};
+
 &uart0 {
 	status = "okay";
 };

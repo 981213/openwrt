@@ -123,15 +123,43 @@
 			};
 		};
 
-		wlan_rf: phy@11c00000{
+		wlan_rf: phy@11c00000 {
 			compatible = "siflower,sf19a2890-rf";
 			reg = <0x11c00000 0x600000>;
-			interrupts = <GIC_SHARED 187 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts = <GIC_SHARED 187 IRQ_TYPE_LEVEL_LOW>;
 			clocks = <&rfclk 1>, <&rfclk 2>, <&rfclk 3>;
 			clock-names = "axi", "boot", "lp";
 			resets = <&rfrst 0>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&wlan_pins>;
+			status = "disabled";
+		};
+
+		wlan_lb: wlan-lb@11000000 {
+			compatible = "siflower,sf19a2890-lb";
+			reg = <0x11000000 0x400000>;
+			interrupts = <GIC_SHARED 90 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SHARED 89 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SHARED 115 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&wlan24clk 0>, <&wlan24clk 1>, <&wlan24clk 2>,
+				 <&iramclk 0>, <&iramclk 1>, <&iramclk 2>, <&iramclk 3>, <&clk CLK_MUXDIV_M6250_0>;
+			clock-names = "axis", "axim", "plf", "cpu", "bus1", "bus2", "bus3";
+			resets = <&wlan24rst 0>, <&iramrst 0>;
+			reset-names = "wlan_reset", "iram_reset";
+			status = "disabled";
+		};
+
+		wlan_hb: wlan-hb@17800000 {
+			compatible = "siflower,sf19a2890-hb";
+			reg = <0x17800000 0x400000>;
+			interrupts = <GIC_SHARED 186 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SHARED 185 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SHARED 115 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&wlan5clk 0>, <&wlan5clk 1>, <&wlan5clk 2>,
+				 <&iramclk 0>, <&iramclk 1>, <&iramclk 2>, <&iramclk 3>, <&clk CLK_MUXDIV_M6250_1>;
+			clock-names = "axis", "axim", "plf", "cpu", "bus1", "bus2", "bus3";
+			resets = <&wlan5rst 0>;
+			reset-names = "wlan_reset", "iram_reset";
 			status = "disabled";
 		};
 
@@ -270,6 +298,21 @@
 			reg = <0x19e04404 0xc>;
 			clocks = <&clk CLK_MUXDIV_BUS1>, <&clk CLK_MUXDIV_CPU>, <&clk CLK_MUXDIV_GMAC_BYP_REF>, <&clk CLK_MUXDIV_ETH_TSU>;
 			clock-output-names = "gmac", "gmac_pclk", "gmac_byp_ref", "ethtsu";
+			#clock-cells = <1>;
+		};
+
+		iramrst: reset-controller@19e00c00 {
+			compatible = "siflower,sf19a2890-periph-reset";
+			reg = <0x19e00c00 0x4>;
+			#reset-cells = <1>;
+			siflower,reset-masks = <0x1d>;
+		};
+
+		iramclk: clock-controller@19e00c04 {
+			compatible = "siflower,sf19a2890-periph-clk";
+			reg = <0x19e00c04 0xc>;
+			clocks = <&clk CLK_MUXDIV_CPU>, <&clk CLK_MUXDIV_BUS1>,  <&clk CLK_MUXDIV_BUS2>,  <&clk CLK_MUXDIV_BUS3>;
+			clock-output-names = "iram_cpu", "iram_bus1", "iram_bus2", "iram_bus3";
 			#clock-cells = <1>;
 		};
 
