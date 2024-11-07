@@ -12,6 +12,15 @@ define Device/Default
 	append-rootfs | pad-rootfs | append-metadata
 endef
 
+define Device/bananapi_bpi-wifi5
+  DEVICE_VENDOR := Bananapi
+  DEVICE_MODEL := BPi-WiFi5
+  BOARD_NAME := bananapi,bpi-wifi5
+  DEVICE_DTS := sf19a2890_bananapi,bpi-wifi5
+  DEVICE_PACKAGES := swconfig
+endef
+TARGET_DEVICES += bananapi_bpi-wifi5
+
 define Device/siflower_sf19a2890-evb
   DEVICE_VENDOR := Siflower
   DEVICE_MODEL := SF19A2890 EVB
