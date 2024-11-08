@@ -125,6 +125,83 @@
 	};
 };
 
+&xgmac0 {
+	status = "okay";
+	phy-handle = <&sfphy0>;
+};
+
+&xgmac1 {
+	status = "okay";
+	phy-handle = <&sfphy1>;
+};
+
+&xgmac2 {
+	status = "okay";
+	phy-handle = <&sfphy2>;
+};
+
+&xgmac3 {
+	status = "okay";
+	phy-handle = <&sfphy3>;
+};
+
+&xgmac4 {
+	status = "okay";
+	phy-handle = <&enphy>;
+};
+
+&xgmac5 {
+	status = "okay";
+	tx-internal-delay-ps = <2499>;
+	rx-internal-delay-ps = <1519>;
+	phy-mode = "rgmii-txid";
+	phy-handle = <&sfphy6>;
+};
+
+&mdio0 {
+	reset-gpios = <&gpio 22 GPIO_ACTIVE_LOW>;
+	reset-delay-us = <10000>;
+	reset-post-delay-us = <100000>;
+
+	sfphy0: ethernet-phy@1 {
+		compatible = "ethernet-phy-idadb4.0411";
+		reg = <0x1>;
+	};
+
+	sfphy1: ethernet-phy@2 {
+		compatible = "ethernet-phy-idadb4.0411";
+		reg = <0x2>;
+	};
+
+	sfphy2: ethernet-phy@3 {
+		compatible = "ethernet-phy-idadb4.0411";
+		reg = <0x3>;
+	};
+
+	sfphy3: ethernet-phy@4 {
+		compatible = "ethernet-phy-idadb4.0411";
+		reg = <0x4>;
+	};
+
+	sfphy6: ethernet-phy@6 {
+		compatible = "ethernet-phy-idadb4.0412";
+		reg = <0x6>;
+		reset-gpios = <&gpio 1 GPIO_ACTIVE_LOW>;
+		reset-assert-us = <10000>;
+		reset-deassert-us = <100000>;
+	};
+};
+
+&mdio1 {
+	enphy: ethernet-phy@f {
+		compatible = "ethernet-phy-id03a2.a411";
+		reg = <0xf>;
+		reset-gpios = <&gpio 39 GPIO_ACTIVE_LOW>;
+		reset-assert-us = <10000>;
+		reset-deassert-us = <100000>;
+	};
+};
+
 &pcie_phy {
 	status = "okay";
 };
@@ -144,5 +221,21 @@
 };
 
 &usb {
+	status = "okay";
+};
+
+&dpns {
+	status = "okay";
+};
+
+&edma {
+	status = "okay";
+};
+
+&qsgmii_pcs {
+	status = "okay";
+};
+
+&sgmii_pcs {
 	status = "okay";
 };
