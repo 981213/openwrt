@@ -5,7 +5,7 @@ platform_do_upgrade() {
 	local board=$(board_name)
 
 	case "$board" in
-	siflower,sf21h8898-bpi)
+	bananapi,bpi-rv2)
 		fit_do_upgrade "$1"
 		;;
 	*)

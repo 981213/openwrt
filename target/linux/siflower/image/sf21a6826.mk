@@ -12,6 +12,13 @@ define Device/Default
   IMAGE/sysupgrade.bin = append-kernel | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb external-static-with-rootfs | pad-rootfs | append-metadata
 endef
 
+define Device/bananapi_bpi-rv2
+  DEVICE_VENDOR := Bananapi
+  DEVICE_MODEL := BPi-RV2
+  DEVICE_DTS := sf21h8898_bananapi_bpi-rv2
+  SUPPORTED_DEVICES := bananapi,bpi-rv2
+endef
+TARGET_DEVICES += bananapi_bpi-rv2
 
 define Device/siflower_sf21a6826-evb
   DEVICE_VENDOR := Siflower
@@ -20,11 +27,3 @@ define Device/siflower_sf21a6826-evb
   SUPPORTED_DEVICES := siflower,sf21a6826-evb
 endef
 TARGET_DEVICES += siflower_sf21a6826-evb
-
-define Device/siflower_sf21h8898-bpi
-  DEVICE_VENDOR := Siflower
-  DEVICE_MODEL := SF21H8898 BPI
-  DEVICE_DTS := sf21h8898_bpi
-  SUPPORTED_DEVICES := siflower,sf21h8898-bpi
-endef
-TARGET_DEVICES += siflower_sf21h8898-bpi

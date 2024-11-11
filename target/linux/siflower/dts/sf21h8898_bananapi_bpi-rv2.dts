@@ -6,8 +6,8 @@
 #include "sf21a6826.dtsi"
 
 / {
-	model = "siflower sf21h8898 bpi evaluation board";
-	compatible = "siflower,sf21h8898-bpi", "siflower,sf21h8898";
+	model = "Bananapi BPi-RV2";
+	compatible = "bananapi,bpi-rv2", "siflower,sf21h8898";
 
 	chosen {
 		bootargs = "earlycon root=/dev/fit0 rootwait";
