@@ -15,12 +15,15 @@
 #include <linux/nvmem-consumer.h>
 
 #include "stmmac.h"
+#include "hwif.h"
 #include "stmmac_platform.h"
+#include "sf19a2890-hnat.h"
 
 struct sf19a2890_gmac_priv {
 	struct device *dev;
 	void __iomem *gmac_cfg;
 	struct clk *gmac_byp_ref_clk;
+	struct sf19a2890_hnat *hnat;
 };
 
 #define REG_MISC		0x0
@@ -110,6 +113,28 @@ static int sfgmac_setup_phy_interface(struct sf19a2890_gmac_priv *priv)
 	return 0;
 }
 
+static int sf19a2890_fix_soc_reset(struct stmmac_priv *stpriv,
+				   void __iomem *ioaddr)
+{
+	struct sf19a2890_gmac_priv *priv = stpriv->plat->bsp_priv;
+	int ret;
+
+	ret = stmmac_do_callback(stpriv, dma, reset, ioaddr);
+	if (ret)
+		return ret;
+
+	return sf19a2890_hnat_restore(priv->hnat);
+}
+
+static int sf19a2890_setup_tc(struct net_device *ndev,
+			      enum tc_setup_type type, void *type_data)
+{
+	struct stmmac_priv *stpriv = netdev_priv(ndev);
+	struct sf19a2890_gmac_priv *priv = stpriv->plat->bsp_priv;
+
+	return sf19a2890_hnat_setup_tc(priv->hnat, ndev, type, type_data);
+}
+
 static int sf19a2890_gmac_probe(struct platform_device *pdev)
 {
 	struct plat_stmmacenet_data *plat_dat;
@@ -152,10 +177,31 @@ static int sf19a2890_gmac_probe(struct platform_device *pdev)
 	}
 
 	plat_dat->bsp_priv = priv;
+	priv->hnat = sf19a2890_hnat_create(&pdev->dev, stmmac_res.addr);
+	if (IS_ERR(priv->hnat))
+		return PTR_ERR(priv->hnat);
+	plat_dat->fix_soc_reset = sf19a2890_fix_soc_reset;
+	plat_dat->setup_tc = sf19a2890_setup_tc;
 
 	ret = stmmac_pltfr_probe(pdev, plat_dat, &stmmac_res);
+	if (ret)
+		return ret;
 
-	return ret;
+	ret = sf19a2890_hnat_start(priv->hnat, platform_get_drvdata(pdev));
+	if (ret)
+		dev_err(&pdev->dev, "HNAT initialization failed: %d\n", ret);
+
+	return 0;
+}
+
+static void sf19a2890_gmac_remove(struct platform_device *pdev)
+{
+	struct net_device *ndev = platform_get_drvdata(pdev);
+	struct stmmac_priv *stpriv = netdev_priv(ndev);
+	struct sf19a2890_gmac_priv *priv = stpriv->plat->bsp_priv;
+
+	sf19a2890_hnat_stop(priv->hnat);
+	stmmac_pltfr_remove(pdev);
 }
 
 static const struct of_device_id dwmac_sf19a2890_match[] = {
@@ -166,7 +212,7 @@ MODULE_DEVICE_TABLE(of, dwmac_sf19a2890_match);
 
 static struct platform_driver sf19a2890_gmac_driver = {
 	.probe  = sf19a2890_gmac_probe,
-	.remove = stmmac_pltfr_remove,
+	.remove = sf19a2890_gmac_remove,
 	.driver = {
 		.name           = "sf19a2890-gmac",
 		.pm		= &stmmac_pltfr_pm_ops,
